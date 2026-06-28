@@ -1,5 +1,17 @@
-import { products } from "../data/mockData";
+import { products, suppliers, purchaseOrders, demoUsers } from "../data/mockData";
 import { getStorage, setStorage } from "./storageService";
+
+const defaultTenants = [
+  {
+    tenantId: "TNT001",
+    companyName: "WMS Pro Logistics",
+    companyCode: "WMSPRO",
+    companyEmail: "admin@wms.io",
+    phone: "9876543210",
+    address: "Chennai, Tamil Nadu",
+    createdAt: new Date().toISOString(),
+  },
+];
 
 const defaultWarehouses = [
   {
@@ -11,6 +23,7 @@ const defaultWarehouses = [
     manager: "Sarah Okonkwo",
     companyCode: "WMSPRO",
     tenantId: "TNT001",
+    status: "Active",
   },
   {
     id: "WH-002",
@@ -18,35 +31,80 @@ const defaultWarehouses = [
     code: "SD-002",
     location: "Coimbatore",
     capacity: "64",
-    manager: "Ravi Kumar",
+    manager: "Priya Nair",
     companyCode: "WMSPRO",
     tenantId: "TNT001",
+    status: "Active",
   },
 ];
 
-export function seedInventory() {
-  const existingInventory = getStorage("wms_inventory", []);
-
-  if (existingInventory.length === 0) {
-    const inventory = products.map((product) => ({
-      ...product,
-      companyCode: "WMSPRO",
-      tenantId: "TNT001",
-    }));
-
-    setStorage("wms_inventory", inventory);
+export function seedAppData() {
+  if (getStorage("wms_tenants", []).length === 0) {
+    setStorage("wms_tenants", defaultTenants);
   }
-}
 
-export function seedWarehouses() {
-  const existingWarehouses = getStorage("wms_warehouses", []);
+  if (getStorage("wms_inventory", []).length === 0) {
+    setStorage(
+      "wms_inventory",
+      products.map((product) => ({
+        ...product,
+        companyCode: "WMSPRO",
+        tenantId: "TNT001",
+      }))
+    );
+  }
 
-  if (existingWarehouses.length === 0) {
+  if (getStorage("wms_warehouses", []).length === 0) {
     setStorage("wms_warehouses", defaultWarehouses);
   }
-}
 
-export function seedAppData() {
-  seedInventory();
-  seedWarehouses();
+  if (getStorage("wms_suppliers", []).length === 0) {
+    setStorage(
+      "wms_suppliers",
+      suppliers.map((supplier) => ({
+        ...supplier,
+        companyCode: "WMSPRO",
+        tenantId: "TNT001",
+      }))
+    );
+  }
+
+  if (getStorage("wms_purchase_orders", []).length === 0) {
+    setStorage(
+      "wms_purchase_orders",
+      purchaseOrders.map((order) => ({
+        ...order,
+        companyCode: "WMSPRO",
+        tenantId: "TNT001",
+      }))
+    );
+  }
+
+  if (getStorage("wms_custom_users", []).length === 0) {
+    setStorage("wms_custom_users", []);
+  }
+
+  if (getStorage("wms_demo_users", []).length === 0) {
+    setStorage("wms_demo_users", demoUsers);
+  }
+
+  if (getStorage("wms_tasks", []).length === 0) {
+    setStorage("wms_tasks", []);
+  }
+
+  if (getStorage("wms_stock_movements", []).length === 0) {
+    setStorage("wms_stock_movements", []);
+  }
+
+  if (getStorage("wms_stock_requests", []).length === 0) {
+    setStorage("wms_stock_requests", []);
+  }
+
+  if (getStorage("wms_damaged_goods", []).length === 0) {
+    setStorage("wms_damaged_goods", []);
+  }
+
+  if (getStorage("wms_inventory_transfers", []).length === 0) {
+    setStorage("wms_inventory_transfers", []);
+  }
 }

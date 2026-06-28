@@ -1,125 +1,76 @@
-import {
-  ClipboardList,
-  PackagePlus,
-  PackageMinus,
-  Truck,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../layouts/DashboardLayout";
-import { getStorage } from "../../utils/storageService";
+import { Package, ClipboardList, ArrowLeftRight, AlertTriangle } from "lucide-react";
+import PageHeader from "../../components/common/PageHeader.jsx";
+import StatCard from "../../components/common/StatCard.jsx";
+import DataTable from "../../components/common/DataTable.jsx";
+import StatusBadge from "../../components/common/StatusBadge.jsx";
 import useAuthContext from "../../hooks/useAuthContext";
+import { getStorage } from "../../utils/storageService.js";
 
 export default function StaffDashboard() {
   const { user } = useAuthContext();
-  const navigate = useNavigate();
 
-  const tasks = getStorage("wms_tasks", []).filter(
-    (task) =>
-      task.companyCode === user?.companyCode &&
-      task.assignedTo === user?.email
+  const inventory = getStorage("wms_inventory", []).filter(
+    (item) => item.companyCode === user.companyCode
   );
 
   const movements = getStorage("wms_stock_movements", []).filter(
-    (movement) => movement.companyCode === user?.companyCode
+    (item) => item.companyCode === user.companyCode && item.createdBy === user.name
   );
 
-  const myMovements = movements.filter(
-    (movement) => movement.staffName === user?.name
+  const tasks = getStorage("wms_tasks", []).filter(
+    (item) => item.companyCode === user.companyCode && item.assignedTo === user.name
   );
 
-  const stockInCount = myMovements.filter(
-    (movement) => movement.type === "Stock In"
-  ).length;
+  const damaged = getStorage("wms_damaged_goods", []).filter(
+    (item) => item.companyCode === user.companyCode && item.reportedBy === user.name
+  );
 
-  const stockOutCount = myMovements.filter(
-    (movement) => movement.type === "Stock Out"
-  ).length;
+  const pendingTasks = tasks.filter((item) => item.status !== "Completed");
 
-  const pendingTasks = tasks.filter((task) => task.status !== "Completed");
+  const taskColumns = [
+    { key: "title", label: "Task" },
+    { key: "priority", label: "Priority" },
+    { key: "dueDate", label: "Due Date" },
+    {
+      key: "status",
+      label: "Status",
+      render: (value) => <StatusBadge status={value} />,
+    },
+  ];
 
-  const stats = [
-    { title: "Assigned Tasks", value: tasks.length, icon: ClipboardList },
-    { title: "Pending Tasks", value: pendingTasks.length, icon: Truck },
-    { title: "Stock In Done", value: stockInCount, icon: PackagePlus },
-    { title: "Stock Out Done", value: stockOutCount, icon: PackageMinus },
+  const movementColumns = [
+    { key: "type", label: "Type" },
+    { key: "sku", label: "SKU" },
+    { key: "itemName", label: "Item" },
+    { key: "quantity", label: "Qty" },
+    { key: "date", label: "Date" },
   ];
 
   return (
-    <DashboardLayout>
-      <h1 className="text-3xl font-bold text-navy">Staff Dashboard</h1>
-      <p className="text-muted mt-1">Daily warehouse execution tasks</p>
+    <div>
+      <PageHeader
+        title="Staff Dashboard"
+        description="View assigned tasks and update stock operations"
+      />
 
-      <div className="grid md:grid-cols-4 gap-6 mt-8">
-        {stats.map(({ title, value, icon: Icon }) => (
-          <div key={title} className="card p-6">
-            <Icon className="text-green mb-4" size={30} />
-            <h3 className="text-3xl font-bold text-navy">{value}</h3>
-            <p className="text-muted">{title}</p>
-          </div>
-        ))}
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+        <StatCard title="Inventory Items" value={inventory.length} icon={Package} />
+        <StatCard title="Pending Tasks" value={pendingTasks.length} icon={ClipboardList} />
+        <StatCard title="My Movements" value={movements.length} icon={ArrowLeftRight} />
+        <StatCard title="Damaged Reports" value={damaged.length} icon={AlertTriangle} />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 mt-8">
-        <div className="card p-6">
-          <h2 className="text-xl font-bold text-navy">Pending Tasks</h2>
-
-          <div className="mt-5 space-y-4">
-            {pendingTasks.length === 0 ? (
-              <p className="text-muted">No pending tasks.</p>
-            ) : (
-              pendingTasks.slice(0, 5).map((task) => (
-                <div key={task.id} className="p-4 bg-slate-100 rounded-xl">
-                  <p className="font-semibold">{task.title}</p>
-                  <p className="text-sm text-muted">
-                    Priority: {task.priority} • Status: {task.status}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-
-          <button
-            onClick={() => navigate("/staff/tasks")}
-            className="btn-primary mt-5"
-          >
-            View All Tasks
-          </button>
+      <div className="grid xl:grid-cols-2 gap-6">
+        <div>
+          <h2 className="text-xl font-black mb-4">My Tasks</h2>
+          <DataTable columns={taskColumns} data={tasks} pageSize={5} />
         </div>
 
-        <div className="card p-6">
-          <h2 className="text-xl font-bold text-navy">Quick Actions</h2>
-
-          <div className="grid grid-cols-2 gap-4 mt-5">
-            <button
-              onClick={() => navigate("/staff/stock-in")}
-              className="btn-primary"
-            >
-              Stock In
-            </button>
-
-            <button
-              onClick={() => navigate("/staff/stock-out")}
-              className="btn-primary"
-            >
-              Stock Out
-            </button>
-
-            <button
-              onClick={() => navigate("/staff/scanner")}
-              className="btn-primary"
-            >
-              Scan Barcode
-            </button>
-
-            <button
-              onClick={() => navigate("/staff/damaged-goods")}
-              className="btn-primary"
-            >
-              Report Damage
-            </button>
-          </div>
+        <div>
+          <h2 className="text-xl font-black mb-4">Recent Stock Movements</h2>
+          <DataTable columns={movementColumns} data={movements} pageSize={5} />
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

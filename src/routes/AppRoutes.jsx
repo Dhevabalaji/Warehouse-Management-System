@@ -1,11 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import PublicRoutes from "./PublicRoutes";
-import CommonRoutes from "./CommonRoutes";
-import AdminRoutes from "./AdminRoutes";
-import ManagerRoutes from "./ManagerRoutes";
-import StaffRoutes from "./StaffRoutes";
-
-import NotFoundPage from "../features/auth/NotFoundPage";
+import PublicRoutes from "./PublicRoutes.jsx";
+import CommonRoutes from "./CommonRoutes.jsx";
+import AdminRoutes from "./AdminRoutes.jsx";
+import ManagerRoutes from "./ManagerRoutes.jsx";
+import StaffRoutes from "./StaffRoutes.jsx";
+import NotFoundPage from "../features/auth/NotFoundPage.jsx";
 
 export default function AppRoutes() {
   return (

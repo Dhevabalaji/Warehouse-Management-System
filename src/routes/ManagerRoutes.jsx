@@ -1,40 +1,36 @@
 import { Route } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
+import ProtectedRoute from "./ProtectedRoute.jsx";
+import DashboardLayout from "../components/layout/DashboardLayout.jsx";
 
-import ManagerDashboard from "../features/manager/ManagerDashboard";
-import ProductsPage from "../features/manager/ProductsPage";
-import CreateProductPage from "../features/manager/CreateProductPage";
-import InventoryPage from "../features/manager/InventoryPage";
-import SuppliersPage from "../features/manager/SuppliersPage";
-import CreateSupplierPage from "../features/manager/CreateSupplierPage";
-import PurchaseOrdersPage from "../features/manager/PurchaseOrdersPage";
-import CreatePurchaseOrderPage from "../features/manager/CreatePurchaseOrderPage";
-import StockRequestsPage from "../features/manager/StockRequestsPage";
-import StockMovementsPage from "../features/manager/StockMovementsPage";
-import InventoryTransferPage from "../features/manager/InventoryTransferPage";
-import InventoryTransfersListPage from "../features/manager/InventoryTransfersListPage";
-import AssignTaskPage from "../features/manager/AssignTaskPage";
-import AnalyticsPage from "../features/manager/AnalyticsPage";
-
-const manager = ["manager"];
+import ManagerDashboard from "../features/manager/ManagerDashboard.jsx";
+import InventoryPage from "../features/shared/InventoryPage.jsx";
+import StockRequestsPage from "../features/manager/StockRequestsPage.jsx";
+import TransfersPage from "../features/manager/TransfersPage.jsx";
+import DamagedGoodsPage from "../features/shared/DamagedGoodsPage.jsx";
+import TasksPage from "../features/shared/TasksPage.jsx";
+import ReportsPage from "../features/shared/ReportsPage.jsx";
+import ProfilePage from "../features/shared/ProfilePage.jsx";
+import NotificationsPage from "../features/shared/NotificationsPage.jsx";
 
 export default function ManagerRoutes() {
   return (
-    <>
-      <Route path="/manager/dashboard" element={<ProtectedRoute allowedRoles={manager}><ManagerDashboard /></ProtectedRoute>} />
-      <Route path="/manager/products" element={<ProtectedRoute allowedRoles={manager}><ProductsPage /></ProtectedRoute>} />
-      <Route path="/manager/create-product" element={<ProtectedRoute allowedRoles={manager}><CreateProductPage /></ProtectedRoute>} />
-      <Route path="/manager/inventory" element={<ProtectedRoute allowedRoles={manager}><InventoryPage /></ProtectedRoute>} />
-      <Route path="/manager/suppliers" element={<ProtectedRoute allowedRoles={manager}><SuppliersPage /></ProtectedRoute>} />
-      <Route path="/manager/create-supplier" element={<ProtectedRoute allowedRoles={manager}><CreateSupplierPage /></ProtectedRoute>} />
-      <Route path="/manager/purchase-orders" element={<ProtectedRoute allowedRoles={manager}><PurchaseOrdersPage /></ProtectedRoute>} />
-      <Route path="/manager/create-purchase-order" element={<ProtectedRoute allowedRoles={manager}><CreatePurchaseOrderPage /></ProtectedRoute>} />
-      <Route path="/manager/stock-requests" element={<ProtectedRoute allowedRoles={manager}><StockRequestsPage /></ProtectedRoute>} />
-      <Route path="/manager/stock-movements" element={<ProtectedRoute allowedRoles={manager}><StockMovementsPage /></ProtectedRoute>} />
-      <Route path="/manager/create-transfer" element={<ProtectedRoute allowedRoles={manager}><InventoryTransferPage /></ProtectedRoute>} />
-      <Route path="/manager/transfers" element={<ProtectedRoute allowedRoles={manager}><InventoryTransfersListPage /></ProtectedRoute>} />
-      <Route path="/manager/assign-task" element={<ProtectedRoute allowedRoles={manager}><AssignTaskPage /></ProtectedRoute>} />
-      <Route path="/manager/analytics" element={<ProtectedRoute allowedRoles={manager}><AnalyticsPage /></ProtectedRoute>} />
-    </>
+    <Route
+      path="/manager"
+      element={
+        <ProtectedRoute allowedRoles={["manager"]}>
+          <DashboardLayout />
+        </ProtectedRoute>
+      }
+    >
+      <Route path="dashboard" element={<ManagerDashboard />} />
+      <Route path="inventory" element={<InventoryPage />} />
+      <Route path="stock-requests" element={<StockRequestsPage />} />
+      <Route path="transfers" element={<TransfersPage />} />
+      <Route path="damaged-goods" element={<DamagedGoodsPage />} />
+      <Route path="tasks" element={<TasksPage />} />
+      <Route path="reports" element={<ReportsPage />} />
+      <Route path="profile" element={<ProfilePage />} />
+      <Route path="notifications" element={<NotificationsPage />} />
+    </Route>
   );
 }

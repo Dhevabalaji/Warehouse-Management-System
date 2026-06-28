@@ -1,32 +1,40 @@
 import { Route } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
+import ProtectedRoute from "./ProtectedRoute.jsx";
+import DashboardLayout from "../components/layout/DashboardLayout.jsx";
 
-import AdminDashboard from "../features/admin/AdminDashboard";
-import CompanyProfilePage from "../features/admin/CompanyProfilePage";
-import UserManagementPage from "../features/admin/UserManagementPage";
-import WarehouseManagementPage from "../features/admin/WarehouseManagementPage";
-import CreateWarehousePage from "../features/admin/CreateWarehousePage";
-import CreateManagerPage from "../features/admin/CreateManagerPage";
-import CreateStaffPage from "../features/admin/CreateStaffPage";
-import ReportsPage from "../features/admin/ReportsPage";
-import AuditLogsPage from "../features/admin/AuditLogsPage";
-import SettingsPage from "../features/admin/SettingsPage";
-
-const admin = ["admin"];
+import AdminDashboard from "../features/admin/AdminDashboard.jsx";
+import WarehousesPage from "../features/admin/WarehousesPage.jsx";
+import InventoryPage from "../features/shared/InventoryPage.jsx";
+import UsersPage from "../features/admin/UsersPage.jsx";
+import SuppliersPage from "../features/admin/SuppliersPage.jsx";
+import PurchaseOrdersPage from "../features/admin/PurchaseOrdersPage.jsx";
+import ReportsPage from "../features/shared/ReportsPage.jsx";
+import SettingsPage from "../features/admin/SettingsPage.jsx";
+import ProfilePage from "../features/shared/ProfilePage.jsx";
+import NotificationsPage from "../features/shared/NotificationsPage.jsx";
+import ActivityLogsPage from "../features/admin/ActivityLogsPage.jsx";
 
 export default function AdminRoutes() {
   return (
-    <>
-      <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={admin}><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin/company-profile" element={<ProtectedRoute allowedRoles={admin}><CompanyProfilePage /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute allowedRoles={admin}><UserManagementPage /></ProtectedRoute>} />
-      <Route path="/admin/warehouses" element={<ProtectedRoute allowedRoles={admin}><WarehouseManagementPage /></ProtectedRoute>} />
-      <Route path="/admin/create-warehouse" element={<ProtectedRoute allowedRoles={admin}><CreateWarehousePage /></ProtectedRoute>} />
-      <Route path="/admin/create-manager" element={<ProtectedRoute allowedRoles={admin}><CreateManagerPage /></ProtectedRoute>} />
-      <Route path="/admin/create-staff" element={<ProtectedRoute allowedRoles={admin}><CreateStaffPage /></ProtectedRoute>} />
-      <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={admin}><ReportsPage /></ProtectedRoute>} />
-      <Route path="/admin/audit-logs" element={<ProtectedRoute allowedRoles={admin}><AuditLogsPage /></ProtectedRoute>} />
-      <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={admin}><SettingsPage /></ProtectedRoute>} />
-    </>
+    <Route
+      path="/admin"
+      element={
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <DashboardLayout />
+        </ProtectedRoute>
+      }
+    >
+      <Route path="dashboard" element={<AdminDashboard />} />
+      <Route path="warehouses" element={<WarehousesPage />} />
+      <Route path="inventory" element={<InventoryPage />} />
+      <Route path="users" element={<UsersPage />} />
+      <Route path="suppliers" element={<SuppliersPage />} />
+      <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+      <Route path="reports" element={<ReportsPage />} />
+      <Route path="settings" element={<SettingsPage />} />
+      <Route path="profile" element={<ProfilePage />} />
+      <Route path="notifications" element={<NotificationsPage />} />
+      <Route path="activity-logs" element={<ActivityLogsPage />} />
+    </Route>
   );
 }

@@ -1,96 +1,204 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Boxes, Loader2 } from "lucide-react";
 import useAuthContext from "../../hooks/useAuthContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { registerTenant } = useAuthContext();
+  const { registerTenant, loading } = useAuthContext();
+
+  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     companyName: "",
     companyCode: "",
     companyEmail: "",
+    phone: "",
+    address: "",
     adminName: "",
     adminEmail: "",
-    phone: "",
     password: "",
     confirmPassword: "",
-    address: "",
   });
 
-  const [error, setError] = useState("");
+  function handleChange(event) {
+    setForm({
+      ...form,
+      [event.target.name]: event.target.value,
+    });
+  }
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters");
+    const result = await registerTenant(form);
+
+    if (!result.success) {
+      setError(result.message);
       return;
     }
 
-    registerTenant(form);
-    navigate("/login");
-  };
+    navigate("/login", { replace: true });
+  }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-6">
-      <div className="card w-full max-w-5xl grid md:grid-cols-2 overflow-hidden">
-        <div className="bg-navy text-white p-10">
-          <h1 className="text-3xl font-bold">Create Company Account</h1>
-          <p className="text-blue-100 mt-4">
-            Register your company and create the first admin account.
+    <div className="min-h-screen bg-slate-950 text-white px-6 py-8">
+      <div className="max-w-5xl mx-auto">
+        <Link to="/" className="inline-flex items-center gap-3 mb-8">
+          <div className="h-11 w-11 rounded-2xl bg-yellow-400 text-slate-950 flex items-center justify-center">
+            <Boxes />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold">Smart WMS</h1>
+            <p className="text-xs text-slate-400">Company Registration</p>
+          </div>
+        </Link>
+
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-3xl bg-white/5 border border-white/10 p-8"
+        >
+          <h2 className="text-3xl font-black mb-2">Register Company</h2>
+          <p className="text-slate-400 mb-8">
+            Create tenant account and company admin.
           </p>
 
-          <div className="mt-10 space-y-5">
-            <p>✓ Tenant company setup</p>
-            <p>✓ Admin account creation</p>
-            <p>✓ Role-based dashboards</p>
-            <p>✓ Isolated company warehouse data</p>
+          {error && (
+            <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-300 text-sm">
+              {error}
+            </div>
+          )}
+
+          <SectionTitle title="Company Details" />
+
+          <div className="grid md:grid-cols-2 gap-5">
+            <Input
+              label="Company Name"
+              name="companyName"
+              value={form.companyName}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Company Code"
+              name="companyCode"
+              value={form.companyCode}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Company Email"
+              name="companyEmail"
+              type="email"
+              value={form.companyEmail}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Phone"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+            />
           </div>
-        </div>
 
-        <form onSubmit={handleSubmit} className="p-10">
-          <h2 className="text-2xl font-bold text-navy mb-6">Register</h2>
-
-          {error && <p className="bg-red-100 text-danger p-3 rounded-xl mb-4">{error}</p>}
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <input className="input" name="companyName" placeholder="Company Name" onChange={handleChange} required />
-            <input className="input" name="companyCode" placeholder="Company Code" onChange={handleChange} required />
-            <input className="input" name="companyEmail" placeholder="Company Email" onChange={handleChange} required />
-            <input className="input" name="adminName" placeholder="Admin Full Name" onChange={handleChange} required />
-            <input className="input" name="adminEmail" placeholder="Admin Email" onChange={handleChange} required />
-            <input className="input" name="phone" placeholder="Phone Number" onChange={handleChange} required />
-            <input className="input" name="password" type="password" placeholder="Password" onChange={handleChange} required />
-            <input className="input" name="confirmPassword" type="password" placeholder="Confirm Password" onChange={handleChange} required />
+          <div className="mb-7">
+            <label className="text-sm text-slate-300">Address</label>
+            <textarea
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              rows="3"
+              className="mt-2 w-full rounded-xl bg-slate-900 border border-white/10 px-4 py-3 outline-none focus:border-yellow-400"
+            />
           </div>
 
-          <textarea
-            className="input mt-4"
-            name="address"
-            placeholder="Company Address"
-            rows="3"
-            onChange={handleChange}
-            required
-          />
+          <SectionTitle title="Admin Account" />
 
-          <button className="btn-primary w-full mt-6">Create Account</button>
+          <div className="grid md:grid-cols-2 gap-5">
+            <Input
+              label="Admin Name"
+              name="adminName"
+              value={form.adminName}
+              onChange={handleChange}
+            />
 
-          <p className="text-center text-muted mt-5">
-            Already have an account?{" "}
-            <Link to="/login" className="text-navy font-bold">Login</Link>
+            <Input
+              label="Admin Email"
+              name="adminEmail"
+              type="email"
+              value={form.adminEmail}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Password"
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+            />
+
+            <Input
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+            />
+          </div>
+
+          <button
+            disabled={loading}
+            className="w-full md:w-auto px-8 rounded-xl bg-yellow-400 text-slate-950 font-bold py-3 hover:bg-yellow-300 disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+          >
+            {loading && <Loader2 size={18} className="animate-spin" />}
+            {loading ? "Creating..." : "Create Company"}
+          </button>
+
+          <p className="text-slate-400 text-sm mt-6">
+            Already registered?{" "}
+            <Link to="/login" className="text-yellow-400 font-semibold">
+              Login here
+            </Link>
           </p>
         </form>
       </div>
+    </div>
+  );
+}
+
+function SectionTitle({ title }) {
+  return (
+    <h3 className="text-lg font-bold text-yellow-400 mb-4 border-b border-white/10 pb-3">
+      {title}
+    </h3>
+  );
+}
+
+function Input({ label, name, value, onChange, type = "text" }) {
+  return (
+    <div className="mb-5">
+      <label className="text-sm text-slate-300">{label}</label>
+      <input
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        className="mt-2 w-full rounded-xl bg-slate-900 border border-white/10 px-4 py-3 outline-none focus:border-yellow-400"
+        required
+      />
     </div>
   );
 }

@@ -1,87 +1,205 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import AuthContext from "./AuthContext";
 import { demoUsers } from "../data/mockData";
+import { loginUser, registerCompany, logoutUser } from "../services/authService";
 
-function getSavedUser() {
+const USER_KEY = "wms_user";
+const TOKEN_KEY = "wms_token";
+const CUSTOM_USERS_KEY = "wms_custom_users";
+const TENANTS_KEY = "wms_tenants";
+
+const USE_BACKEND = import.meta.env.VITE_USE_BACKEND === "true";
+
+function readJSON(key, fallback) {
   try {
-    const savedUser = localStorage.getItem("wms_user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
   } catch {
-    return null;
+    return fallback;
   }
 }
 
+function saveJSON(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function normalize(value) {
+  return String(value || "").trim();
+}
+
+function normalizeCode(value) {
+  return normalize(value).toUpperCase();
+}
+
 export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(getSavedUser);
+  const [user, setUser] = useState(() => readJSON(USER_KEY, null));
+  const [loading, setLoading] = useState(false);
 
-  const login = ({ email, password, role, companyCode }) => {
-    const customUsers =
-      JSON.parse(localStorage.getItem("wms_custom_users")) || [];
+  const login = async ({ email, password, role, companyCode }) => {
+    setLoading(true);
 
-    const allUsers = [...demoUsers, ...customUsers];
+    try {
+      if (USE_BACKEND) {
+        const response = await loginUser({
+          email,
+          password,
+          role,
+          companyCode,
+        });
 
-    const foundUser = allUsers.find(
-      (u) =>
-        u.email === email &&
-        u.password === password &&
-        u.role === role &&
-        u.companyCode === companyCode
-    );
+        localStorage.setItem(TOKEN_KEY, response.token);
+        saveJSON(USER_KEY, response.user);
+        setUser(response.user);
 
-    if (!foundUser) {
-      return { success: false };
+        return {
+          success: true,
+          user: response.user,
+        };
+      }
+
+      const customUsers = readJSON(CUSTOM_USERS_KEY, []);
+      const allUsers = [...demoUsers, ...customUsers];
+
+      const foundUser = allUsers.find(
+        (item) =>
+          item.email.toLowerCase() === normalize(email).toLowerCase() &&
+          item.password === password &&
+          item.role === role &&
+          item.companyCode === normalizeCode(companyCode)
+      );
+
+      if (!foundUser) {
+        return {
+          success: false,
+          message: "Invalid company code, email, password or role",
+        };
+      }
+
+      saveJSON(USER_KEY, foundUser);
+      setUser(foundUser);
+
+      return {
+        success: true,
+        user: foundUser,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || "Login failed",
+      };
+    } finally {
+      setLoading(false);
     }
-
-    localStorage.setItem("wms_user", JSON.stringify(foundUser));
-    setUser(foundUser);
-
-    return { success: true, user: foundUser };
   };
 
   const logout = () => {
-    localStorage.removeItem("wms_user");
+    logoutUser();
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     setUser(null);
   };
 
-  const registerTenant = (formData) => {
-    const tenant = {
-      tenantId: `TNT${Date.now()}`,
-      companyName: formData.companyName,
-      companyCode: formData.companyCode,
-    };
+  const registerTenant = async (formData) => {
+    setLoading(true);
 
-    const adminUser = {
-      id: Date.now(),
-      name: formData.adminName,
-      email: formData.adminEmail,
-      password: formData.password,
-      role: "admin",
-      tenantId: tenant.tenantId,
-      companyCode: formData.companyCode,
-    };
+    try {
+      if (USE_BACKEND) {
+        await registerCompany({
+          companyName: formData.companyName,
+          companyCode: formData.companyCode,
+          companyEmail: formData.companyEmail,
+          phone: formData.phone,
+          address: formData.address,
+          adminName: formData.adminName,
+          adminEmail: formData.adminEmail,
+          password: formData.password,
+        });
 
-    const tenants = JSON.parse(localStorage.getItem("wms_tenants")) || [];
-    const users = JSON.parse(localStorage.getItem("wms_custom_users")) || [];
+        return {
+          success: true,
+        };
+      }
 
-    localStorage.setItem("wms_tenants", JSON.stringify([...tenants, tenant]));
-    localStorage.setItem(
-      "wms_custom_users",
-      JSON.stringify([...users, adminUser])
-    );
+      const tenants = readJSON(TENANTS_KEY, []);
+      const users = readJSON(CUSTOM_USERS_KEY, []);
 
-    return { success: true };
+      const companyCode = normalizeCode(formData.companyCode);
+      const adminEmail = normalize(formData.adminEmail).toLowerCase();
+
+      const companyExists = tenants.some(
+        (tenant) => tenant.companyCode === companyCode
+      );
+
+      if (companyExists) {
+        return {
+          success: false,
+          message: "Company code already exists",
+        };
+      }
+
+      const emailExists = [...demoUsers, ...users].some(
+        (existingUser) => existingUser.email.toLowerCase() === adminEmail
+      );
+
+      if (emailExists) {
+        return {
+          success: false,
+          message: "Admin email already exists",
+        };
+      }
+
+      const tenant = {
+        tenantId: `TNT-${Date.now()}`,
+        companyName: normalize(formData.companyName),
+        companyCode,
+        companyEmail: normalize(formData.companyEmail).toLowerCase(),
+        phone: normalize(formData.phone),
+        address: normalize(formData.address),
+        createdAt: new Date().toISOString(),
+      };
+
+      const adminUser = {
+        id: Date.now(),
+        name: normalize(formData.adminName),
+        email: adminEmail,
+        password: formData.password,
+        role: "admin",
+        tenantId: tenant.tenantId,
+        companyCode,
+        warehouse: "Head Office",
+        createdAt: new Date().toISOString(),
+      };
+
+      saveJSON(TENANTS_KEY, [...tenants, tenant]);
+      saveJSON(CUSTOM_USERS_KEY, [...users, adminUser]);
+
+      return {
+        success: true,
+        tenant,
+        user: adminUser,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || "Registration failed",
+      };
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-        registerTenant,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      isAuthenticated: Boolean(user),
+      login,
+      logout,
+      registerTenant,
+      useBackend: USE_BACKEND,
+    }),
+    [user, loading]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

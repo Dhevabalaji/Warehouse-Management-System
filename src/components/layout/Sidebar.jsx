@@ -1,159 +1,130 @@
+import { NavLink } from "react-router-dom";
 import {
+  Boxes,
   LayoutDashboard,
+  Warehouse,
   Package,
   Users,
-  Warehouse,
-  BarChart3,
-  Settings,
   Truck,
   ClipboardList,
-  ScanLine,
-  Search,
+  ArrowLeftRight,
+  AlertTriangle,
+  BarChart3,
   LogOut,
-  Building2,
+  Settings,
+  UserCog,
+  X,
+  UserCircle,
   Bell,
-  User,
-  ArrowRightLeft,
-  ShoppingCart,
+  History,
 } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
 import useAuthContext from "../../hooks/useAuthContext";
 
-const menuItems = {
+const links = {
   admin: [
     { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "Company Profile", path: "/admin/company-profile", icon: Building2 },
-    { label: "Users", path: "/admin/users", icon: Users },
     { label: "Warehouses", path: "/admin/warehouses", icon: Warehouse },
-    { label: "Create Warehouse", path: "/admin/create-warehouse", icon: Warehouse },
-    { label: "Create Manager", path: "/admin/create-manager", icon: Users },
-    { label: "Create Staff", path: "/admin/create-staff", icon: Users },
+    { label: "Inventory", path: "/admin/inventory", icon: Package },
+    { label: "Users", path: "/admin/users", icon: Users },
+    { label: "Suppliers", path: "/admin/suppliers", icon: Truck },
+    { label: "Purchase Orders", path: "/admin/purchase-orders", icon: ClipboardList },
     { label: "Reports", path: "/admin/reports", icon: BarChart3 },
-    { label: "Audit Logs", path: "/admin/audit-logs", icon: ClipboardList },
+    { label: "Notifications", path: "/admin/notifications", icon: Bell },
+    { label: "Activity Logs", path: "/admin/activity-logs", icon: History },
     { label: "Settings", path: "/admin/settings", icon: Settings },
+    { label: "Profile", path: "/admin/profile", icon: UserCircle },
   ],
-
   manager: [
     { label: "Dashboard", path: "/manager/dashboard", icon: LayoutDashboard },
-    { label: "Products", path: "/manager/products", icon: Package },
-    { label: "Create Product", path: "/manager/create-product", icon: Package },
-    { label: "Inventory", path: "/manager/inventory", icon: ClipboardList },
-    { label: "Suppliers", path: "/manager/suppliers", icon: Truck },
-    { label: "Create Supplier", path: "/manager/create-supplier", icon: Truck },
-    { label: "Purchase Orders", path: "/manager/purchase-orders", icon: ShoppingCart },
-    { label: "Create Purchase Order", path: "/manager/create-purchase-order", icon: ShoppingCart },
+    { label: "Inventory", path: "/manager/inventory", icon: Package },
     { label: "Stock Requests", path: "/manager/stock-requests", icon: ClipboardList },
-    { label: "Stock Movements", path: "/manager/stock-movements", icon: ClipboardList },
-    { label: "Inventory Transfer", path: "/manager/create-transfer", icon: ArrowRightLeft },
-    { label: "Transfer History", path: "/manager/transfers", icon: ArrowRightLeft },
-    { label: "Assign Task", path: "/manager/assign-task", icon: ClipboardList },
-    { label: "Analytics", path: "/manager/analytics", icon: BarChart3 },
+    { label: "Transfers", path: "/manager/transfers", icon: ArrowLeftRight },
+    { label: "Damaged Goods", path: "/manager/damaged-goods", icon: AlertTriangle },
+    { label: "Staff Tasks", path: "/manager/tasks", icon: UserCog },
+    { label: "Reports", path: "/manager/reports", icon: BarChart3 },
+    { label: "Notifications", path: "/manager/notifications", icon: Bell },
+    { label: "Profile", path: "/manager/profile", icon: UserCircle },
   ],
-
   staff: [
     { label: "Dashboard", path: "/staff/dashboard", icon: LayoutDashboard },
-    { label: "Assigned Tasks", path: "/staff/tasks", icon: ClipboardList },
-    { label: "Stock In", path: "/staff/stock-in", icon: Package },
-    { label: "Stock Out", path: "/staff/stock-out", icon: ClipboardList },
-    { label: "Scanner", path: "/staff/scanner", icon: ScanLine },
-    { label: "Search Products", path: "/staff/search", icon: Search },
-    { label: "Damaged Goods", path: "/staff/damaged-goods", icon: Package },
+    { label: "Inventory", path: "/staff/inventory", icon: Package },
+    { label: "Stock Movement", path: "/staff/stock-movement", icon: ArrowLeftRight },
+    { label: "My Tasks", path: "/staff/tasks", icon: ClipboardList },
+    { label: "Damaged Goods", path: "/staff/damaged-goods", icon: AlertTriangle },
+    { label: "Notifications", path: "/staff/notifications", icon: Bell },
+    { label: "Profile", path: "/staff/profile", icon: UserCircle },
   ],
 };
 
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuthContext();
-  const navigate = useNavigate();
-
-  const role = user?.role?.toLowerCase();
-  const items = menuItems[role] || [];
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const navLinks = links[user?.role] || [];
 
   return (
-    <aside className="w-72 min-h-screen bg-[#071739] text-white flex flex-col shadow-2xl">
-      <div className="px-6 py-6 border-b border-white/10">
-        <h1 className="text-2xl font-bold text-white">Smart WMS</h1>
-        <p className="text-sm text-slate-300 mt-1">
-          Warehouse Management System
-        </p>
-      </div>
+    <>
+      {open && (
+        <button
+          onClick={onClose}
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden"
+        />
+      )}
 
-      <div className="px-6 py-5 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-[#1f4ba5] flex items-center justify-center">
-            <User size={22} />
+      <aside
+        className={`fixed lg:static top-0 left-0 z-50 w-72 shrink-0 min-h-screen border-r border-white/10 bg-slate-900 p-5 flex flex-col transform transition-transform duration-300 ${
+          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl bg-yellow-400 text-slate-950 flex items-center justify-center">
+              <Boxes />
+            </div>
+            <div>
+              <h1 className="text-lg font-black">Smart WMS</h1>
+              <p className="text-xs text-slate-400">{user?.companyCode}</p>
+            </div>
           </div>
 
-          <div>
-            <h3 className="font-semibold">{user?.name || "User"}</h3>
-            <p className="text-xs text-slate-300 capitalize">{user?.role}</p>
-            <p className="text-xs text-slate-400">{user?.companyCode}</p>
-          </div>
+          <button
+            onClick={onClose}
+            className="lg:hidden h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center"
+          >
+            <X size={18} />
+          </button>
         </div>
-      </div>
 
-      <nav className="flex-1 overflow-y-auto px-4 py-5">
-        <div className="space-y-2">
-          {items.map((item) => {
+        <nav className="space-y-2 flex-1 overflow-y-auto pr-1">
+          {navLinks.map((item) => {
             const Icon = item.icon;
 
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
                     isActive
-                      ? "bg-[#1f4ba5] text-white shadow-lg"
+                      ? "bg-yellow-400 text-slate-950"
                       : "text-slate-300 hover:bg-white/10 hover:text-white"
                   }`
                 }
               >
-                <Icon size={20} />
-                <span className="text-sm font-medium">{item.label}</span>
+                <Icon size={19} />
+                {item.label}
               </NavLink>
             );
           })}
-        </div>
-      </nav>
-
-      <div className="border-t border-white/10 p-4 space-y-2">
-        <NavLink
-          to="/notifications"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 rounded-xl ${
-              isActive ? "bg-[#1f4ba5]" : "hover:bg-white/10"
-            }`
-          }
-        >
-          <Bell size={20} />
-          Notifications
-        </NavLink>
-
-        <NavLink
-          to="/profile"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 rounded-xl ${
-              isActive ? "bg-[#1f4ba5]" : "hover:bg-white/10"
-            }`
-          }
-        >
-          <User size={20} />
-          Profile
-        </NavLink>
+        </nav>
 
         <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-600 transition-all"
+          onClick={logout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-300 hover:bg-red-500/10 mt-4"
         >
-          <LogOut size={20} />
+          <LogOut size={19} />
           Logout
         </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

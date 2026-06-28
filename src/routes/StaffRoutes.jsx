@@ -1,26 +1,32 @@
 import { Route } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
+import ProtectedRoute from "./ProtectedRoute.jsx";
+import DashboardLayout from "../components/layout/DashboardLayout.jsx";
 
-import StaffDashboard from "../features/staff/StaffDashboard";
-import StockInPage from "../features/staff/StockInPage";
-import StockOutPage from "../features/staff/StockOutPage";
-import ScannerPage from "../features/staff/ScannerPage";
-import ProductSearchPage from "../features/staff/ProductSearchPage";
-import AssignedTasksPage from "../features/staff/AssignedTasksPage";
-import DamagedGoodsPage from "../features/staff/DamagedGoodsPage";
-
-const staff = ["staff"];
+import StaffDashboard from "../features/staff/StaffDashboard.jsx";
+import InventoryPage from "../features/shared/InventoryPage.jsx";
+import StockMovementPage from "../features/staff/StockMovementPage.jsx";
+import TasksPage from "../features/shared/TasksPage.jsx";
+import DamagedGoodsPage from "../features/shared/DamagedGoodsPage.jsx";
+import ProfilePage from "../features/shared/ProfilePage.jsx";
+import NotificationsPage from "../features/shared/NotificationsPage.jsx";
 
 export default function StaffRoutes() {
   return (
-    <>
-      <Route path="/staff/dashboard" element={<ProtectedRoute allowedRoles={staff}><StaffDashboard /></ProtectedRoute>} />
-      <Route path="/staff/stock-in" element={<ProtectedRoute allowedRoles={staff}><StockInPage /></ProtectedRoute>} />
-      <Route path="/staff/stock-out" element={<ProtectedRoute allowedRoles={staff}><StockOutPage /></ProtectedRoute>} />
-      <Route path="/staff/scanner" element={<ProtectedRoute allowedRoles={staff}><ScannerPage /></ProtectedRoute>} />
-      <Route path="/staff/search" element={<ProtectedRoute allowedRoles={staff}><ProductSearchPage /></ProtectedRoute>} />
-      <Route path="/staff/tasks" element={<ProtectedRoute allowedRoles={staff}><AssignedTasksPage /></ProtectedRoute>} />
-      <Route path="/staff/damaged-goods" element={<ProtectedRoute allowedRoles={staff}><DamagedGoodsPage /></ProtectedRoute>} />
-    </>
+    <Route
+      path="/staff"
+      element={
+        <ProtectedRoute allowedRoles={["staff"]}>
+          <DashboardLayout />
+        </ProtectedRoute>
+      }
+    >
+      <Route path="dashboard" element={<StaffDashboard />} />
+      <Route path="inventory" element={<InventoryPage />} />
+      <Route path="stock-movement" element={<StockMovementPage />} />
+      <Route path="tasks" element={<TasksPage />} />
+      <Route path="damaged-goods" element={<DamagedGoodsPage />} />
+      <Route path="profile" element={<ProfilePage />} />
+      <Route path="notifications" element={<NotificationsPage />} />
+    </Route>
   );
 }
